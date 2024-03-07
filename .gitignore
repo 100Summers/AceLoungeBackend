@@ -1,0 +1,14 @@
+# Ignore all .log files
+*.log
+
+# Ignore node_modules directory
+node_modules/
+
+# Ignore all files in any directory named temp
+temp/
+
+# Ignore a specific file
+config.env
+
+# Exclude files from being ignored
+!important.log
