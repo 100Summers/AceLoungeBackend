@@ -36,7 +36,7 @@ async function connectToDatabase() {
 }
 
 // Start server
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 9000;
 app.listen(port, async () => {
 	await connectToDatabase();
 	console.log(`Server running on port ${port}`);
