@@ -9,6 +9,7 @@ const orderSchema = new mongoose.Schema({
 				required: true,
 			},
 			selectedOptions: [{ name: String, price: Number }],
+			price: Number,
 		},
 	],
 	table: {
@@ -22,6 +23,10 @@ const orderSchema = new mongoose.Schema({
 	totalPrice: {
 		type: Number,
 		required: true,
+	},
+	notes: {
+		type: String,
+		required: false,
 	},
 	status: {
 		type: String,
