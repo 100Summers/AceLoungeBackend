@@ -1,5 +1,5 @@
 ### Create new product
-POST http://localhost:9000/products
+POST http://localhost:3000/products
 Content-Type: application/json
 
 {
@@ -18,17 +18,17 @@ Content-Type: application/json
 }
 
 ### Get all products
-GET http://localhost:9000/products
+GET http://localhost:3000/products
 role: employee
 
 ###
-GET http://localhost:9000/products/categories/food
+GET http://localhost:3000/products/categories/food
 
 ### Get reservation by ID 
-GET http://localhost:9000/products/65d4720710a0f7f51bc7a179
+GET http://localhost:3000/products/65d4720710a0f7f51bc7a179
 
 ### Update product
-PATCH http://localhost:9000/products/65d7d82714056c7ab1b24582
+PATCH http://localhost:3000/products/65d7d82714056c7ab1b24582
 Content-Type: application/json
 
 {
@@ -36,4 +36,4 @@ Content-Type: application/json
 }
 
 ### Delete reservation
-DELETE http://localhost:9000/products/65e1178897a6e20305e9fed4
+DELETE http://localhost:3000/products/65e1178897a6e20305e9fed4
