@@ -1,5 +1,5 @@
 ### Get all orders
-GET https://nl-app.onrender.com/orders
+GET https://vivid-primacy-416521.lm.r.appspot.com/orders
 role: employee
 
 ### Get unpaid orders
