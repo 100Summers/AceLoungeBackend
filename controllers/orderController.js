@@ -1,7 +1,7 @@
 const express = require("express");
-const router = express.Router();
 const Product = require("../models/product");
 const Order = require("../models/order");
+const router = express.Router();
 
 // Get all orders, sorted by unprocessed first, then processed, then paid
 router.get("/", async (req, res) => {
@@ -19,23 +19,28 @@ router.get("/", async (req, res) => {
 	}
 });
 
-// Get order by id
-router.get("/:id", async (req, res) => {
+// Get daily revenue
+router.get("/revenue/daily", async (req, res) => {
 	try {
-		const { id } = req.params;
-
-		const order = await Order.findById(id);
-
-		if (!order) {
-			return res.status(404).json({ error: "Order not found" });
-		}
-
-		res.json(order);
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: "Server error" });
+	  const dailyRevenue = await Order.aggregate([
+		{
+		  $match: { status: "paid" } // Only consider paid orders
+		},
+		{
+		  $group: {
+			_id: { $dateToString: { format: "%Y-%m-%d", date: "$orderDate" } },
+			totalRevenue: { $sum: "$totalPrice" },
+			count: { $sum: 1 }
+		  }
+		},
+		{ $sort: { _id: 1 } } // Sort by date ascending
+	  ]);
+  
+	  res.json(dailyRevenue);
+	} catch (error) {
+	  res.status(500).json({ message: error.message });
 	}
-});
+  });
 
 // Get unpaid orders (unprocessed, then processed)
 router.get("/unpaid", async (req, res) => {
@@ -58,6 +63,24 @@ router.get("/unpaid", async (req, res) => {
 		res.json(unpaidOrders);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
+	}
+});
+
+// Get order by id
+router.get("/:id", async (req, res) => {
+	try {
+		const { id } = req.params;
+
+		const order = await Order.findById(id);
+
+		if (!order) {
+			return res.status(404).json({ error: "Order not found" });
+		}
+
+		res.json(order);
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: "Server error" });
 	}
 });
 
@@ -104,8 +127,6 @@ router.post("/", async (req, res) => {
 	  res.status(500).json({ error: "Server error" });
 	}
   });
-
-module.exports = router;
 
 // Update order status to "unprocessed"
 router.patch("/:orderId/unprocessed", async (req, res) => {
