@@ -127,12 +127,12 @@ router.patch("/:orderId/unprocessed", async (req, res) => {
 router.patch("/:orderId/processed", async (req, res) => {
 	try {
 	  const { orderId } = req.params;
-  
 	  const order = await Order.findById(orderId);
-  
 	  if (!order) {
 		return res.status(404).json({ error: "Order not found" });
 	  }
+  
+	  let lowStockProducts = []; // Array to keep track of low stock products
   
 	  // Decrease product quantity for stockable products
 	  for (let product of order.products) {
@@ -140,6 +140,9 @@ router.patch("/:orderId/processed", async (req, res) => {
   
 		if (dbProduct.stockable) {
 		  dbProduct.qty--;
+		  if (dbProduct.qty < 10) {
+			lowStockProducts.push(dbProduct); // Add to low stock array
+		  }
 		  await dbProduct.save();
 		}
 	  }
@@ -150,12 +153,16 @@ router.patch("/:orderId/processed", async (req, res) => {
 		{ new: true }
 	  );
   
-	  res.status(200).json(updatedOrder);
+	  // Include low stock information in the response
+	  res.status(200).json({
+		updatedOrder,
+		lowStockProducts: lowStockProducts.length > 0 ? lowStockProducts : null
+	  });
 	} catch (error) {
 	  res.status(400).json({ message: error.message });
 	}
   });
-
+  
 // Update order status to "paid"
 router.patch("/:orderId/paid", async (req, res) => {
 	try {
