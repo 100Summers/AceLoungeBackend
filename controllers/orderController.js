@@ -20,15 +20,40 @@ router.get("/", async (req, res) => {
 });
 
 // Get daily revenue
-router.get("/revenue/daily", async (req, res) => {
+router.get("/revenue/:timeframe", async (req, res) => {
+	const { timeframe } = req.params; // 'daily', 'monthly', 'yearly'
+	const { startDate, endDate } = req.query; // Expecting ISO date strings
+  
+	// Define the MongoDB aggregation pipeline
+	let groupBy = {};
+	switch (timeframe) {
+	  case 'daily':
+		groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$orderDate" } };
+		break;
+	  case 'monthly':
+		groupBy = { $dateToString: { format: "%Y-%m", date: "$orderDate" } };
+		break;
+	  case 'yearly':
+		groupBy = { $dateToString: { format: "%Y", date: "$orderDate" } };
+		break;
+	  default:
+		return res.status(400).json({ error: "Invalid timeframe specified" });
+	}
+  
 	try {
-	  const dailyRevenue = await Order.aggregate([
+	  const revenueData = await Order.aggregate([
 		{
-		  $match: { status: "paid" } // Only consider paid orders
+		  $match: {
+			status: "paid",
+			orderDate: {
+			  $gte: new Date(startDate),
+			  $lte: new Date(endDate)
+			}
+		  }
 		},
 		{
 		  $group: {
-			_id: { $dateToString: { format: "%Y-%m-%d", date: "$orderDate" } },
+			_id: groupBy,
 			totalRevenue: { $sum: "$totalPrice" },
 			count: { $sum: 1 }
 		  }
@@ -36,11 +61,12 @@ router.get("/revenue/daily", async (req, res) => {
 		{ $sort: { _id: 1 } } // Sort by date ascending
 	  ]);
   
-	  res.json(dailyRevenue);
+	  res.json(revenueData);
 	} catch (error) {
 	  res.status(500).json({ message: error.message });
 	}
   });
+  
 
 // Get unpaid orders (unprocessed, then processed)
 router.get("/unpaid", async (req, res) => {
